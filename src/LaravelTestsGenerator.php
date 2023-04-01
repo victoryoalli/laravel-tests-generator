@@ -2,12 +2,11 @@
 
 namespace Victoryoalli\LaravelTestsGenerator;
 
+use OpenAI;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
-use OpenAI;
-use OpenAI\Client;
 
 class LaravelTestsGenerator
 {
@@ -18,14 +17,13 @@ class LaravelTestsGenerator
         $this->client = OpenAI::client(config('openai.api_key'));
     }
 
-
     public function generate(string $inputFilePath, string $outputFilePath)
     {
         $testFileContent = $this->getTestFileContent($inputFilePath);
 
         // Create the directory if it does not exist
         $testFileDirectory = dirname($outputFilePath);
-        if (!is_dir($testFileDirectory)) {
+        if (! is_dir($testFileDirectory)) {
             mkdir($testFileDirectory, 0755, true);
         }
 
@@ -35,6 +33,7 @@ class LaravelTestsGenerator
 
         return $outputFilePath;
     }
+
     private function getTestFileContent(string $filePath)
     {
         $className = pathinfo($filePath, PATHINFO_FILENAME);
@@ -44,7 +43,7 @@ class LaravelTestsGenerator
         // $generatedCode = $this->completion($className, $functionList);
         $generatedCode = $this->chat($className, $functionList);
 
-       ray($generatedCode);
+        ray($generatedCode);
 
         return $generatedCode;
     }
@@ -62,14 +61,15 @@ class LaravelTestsGenerator
     public function chat($className, $functionList)
     {
         $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ";
-         $response = $this->client->chat()->create([
+        $response = $this->client->chat()->create([
             'model' => 'gpt-4',
             'messages' => [
                 ['role' => 'system', 'content' => $prompt],
             ],
         ]);
 
-        $generatedCode = $this->removeUnnecesaryText($response->choices[0]->message->content, "`");
+        $generatedCode = $this->removeUnnecesaryText($response->choices[0]->message->content, '`');
+
         return $generatedCode;
     }
 
@@ -105,13 +105,13 @@ class LaravelTestsGenerator
                         foreach ($innerStmt->getMethods() as $method) {
                             if ($method->isPublic()) {
                                 $functionName = $method->name->toString();
-                                if($functionName == '__construct') {
+                                if ($functionName == '__construct') {
                                     continue;
                                 }
                                 $params = [];
 
                                 foreach ($method->params as $param) {
-                                    $params[] = '$' . $param->var->name;
+                                    $params[] = '$'.$param->var->name;
                                 }
 
                                 $publicFunctions[$functionName] = $params;

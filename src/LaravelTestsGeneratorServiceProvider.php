@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Victoryoalli\LaravelTestsGenerator;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
+use Victoryoalli\LaravelTestsGenerator\Commands\LaravelTestsGeneratorCommand;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class LaravelTestsGeneratorServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -16,10 +16,10 @@ class SkeletonServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('skeleton')
+            ->name('laravel-tests-generator')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_skeleton_table')
-            ->hasCommand(SkeletonCommand::class);
+            // ->hasMigration('create_laravel-tests-generator_table')
+            ->hasCommand(LaravelTestsGeneratorCommand::class);
     }
 }

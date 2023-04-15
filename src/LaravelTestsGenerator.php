@@ -70,7 +70,7 @@ class LaravelTestsGenerator
             ],
         ]);
         $raw_result = $response->choices[0]->message->content;
-        $generatedCode = $this->removeUnnecesaryText($raw_result, '`');
+        $generatedCode = $this->removeUnnecesaryText($raw_result);
 
         return $generatedCode;
     }

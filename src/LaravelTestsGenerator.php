@@ -14,7 +14,7 @@ class LaravelTestsGenerator
 
     public function __construct()
     {
-        $this->client = OpenAI::client(config('openai.api_key'));
+        $this->client = OpenAI::client(config('tests-generator.openai.api_key'));
     }
 
     public function generate(string $inputFilePath, string $outputFilePath)

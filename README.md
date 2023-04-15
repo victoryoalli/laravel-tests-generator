@@ -1,4 +1,4 @@
-# A Laravel package that leverages GPT to generate PHPUnit test files for existing PHP classes with ease.
+# A Laravel package that leverages Open AI Chat GPT to generate PHPUnit test files for existing PHP classes with ease.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/victoryoalli/laravel-tests-generator.svg?style=flat-square)](https://packagist.org/packages/victoryoalli/laravel-tests-generator)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/victoryoalli/laravel-tests-generator/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/victoryoalli/laravel-tests-generator/actions?query=workflow%3Arun-tests+branch%3Amain)

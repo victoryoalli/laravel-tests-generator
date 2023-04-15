@@ -28,5 +28,4 @@ class LaravelTestsGeneratorCommand extends Command
 
         $this->info("Test file generated at {$outputFilePath}");
     }
-
 }

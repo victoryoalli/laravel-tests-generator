@@ -2,12 +2,11 @@
 
 namespace Victoryoalli\LaravelTestsGenerator;
 
+use OpenAI;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
-use OpenAI;
-use OpenAI\Client;
 
 class LaravelTestsGenerator
 {
@@ -18,14 +17,13 @@ class LaravelTestsGenerator
         $this->client = OpenAI::client(config('openai.api_key'));
     }
 
-
     public function generate(string $inputFilePath, string $outputFilePath)
     {
         $testFileContent = $this->getTestFileContent($inputFilePath);
 
         // Create the directory if it does not exist
         $testFileDirectory = dirname($outputFilePath);
-        if (!is_dir($testFileDirectory)) {
+        if (! is_dir($testFileDirectory)) {
             mkdir($testFileDirectory, 0755, true);
         }
 
@@ -35,6 +33,7 @@ class LaravelTestsGenerator
 
         return $outputFilePath;
     }
+
     private function getTestFileContent(string $filePath)
     {
         $code = $this->getFileContents($filePath);
@@ -62,17 +61,18 @@ class LaravelTestsGenerator
     public function chat($className, $functionList, $code = null)
     {
         // ray('chat');
-        print "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ";
+        echo "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ";
         $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. This is the complet code to test: {$code} ";
         $response = $this->client->chat()->create([
-        'model' => 'gpt-4',
-        'messages' => [
-            ['role' => 'system', 'content' => $prompt],
-        ],
+            'model' => 'gpt-4',
+            'messages' => [
+                ['role' => 'system', 'content' => $prompt],
+            ],
         ]);
         $raw_result = $response->choices[0]->message->content;
         // ray($raw_result)->die();
-        $generatedCode = $this->removeUnnecesaryText($raw_result, "`");
+        $generatedCode = $this->removeUnnecesaryText($raw_result, '`');
+
         return $generatedCode;
     }
 
@@ -96,7 +96,7 @@ class LaravelTestsGenerator
 
     private function getFileContents(string $filePath)
     {
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new \Exception("File not found: {$filePath}");
         }
 
@@ -132,13 +132,13 @@ class LaravelTestsGenerator
                         foreach ($innerStmt->getMethods() as $method) {
                             if ($method->isPublic()) {
                                 $functionName = $method->name->toString();
-                                if($functionName == '__construct') {
+                                if ($functionName == '__construct') {
                                     continue;
                                 }
                                 $params = [];
 
                                 foreach ($method->params as $param) {
-                                    $params[] = '$' . $param->var->name;
+                                    $params[] = '$'.$param->var->name;
                                 }
 
                                 $publicFunctions[$functionName] = $params;

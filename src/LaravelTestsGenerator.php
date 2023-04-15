@@ -14,7 +14,7 @@ class LaravelTestsGenerator
 
     public function __construct()
     {
-        $this->client = OpenAI::client(config('openai.api_key'));
+        $this->client = OpenAI::client(config('tests-generator.openai.api_key'));
     }
 
     public function generate(string $inputFilePath, string $outputFilePath)
@@ -36,14 +36,12 @@ class LaravelTestsGenerator
 
     private function getTestFileContent(string $filePath)
     {
+        $code = $this->getFileContents($filePath);
         $className = pathinfo($filePath, PATHINFO_FILENAME);
         $publicFunctions = $this->getPublicFunctions($filePath);
         $functionList = implode(', ', array_keys($publicFunctions));
 
-        // $generatedCode = $this->completion($className, $functionList);
-        $generatedCode = $this->chat($className, $functionList);
-
-        ray($generatedCode);
+        $generatedCode = $this->chat($className, $functionList, $code);
 
         return $generatedCode;
     }
@@ -54,37 +52,63 @@ class LaravelTestsGenerator
             'model' => 'text-davinci-003',
             'prompt' => "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ",
         ]);
-        // ray(trim($response->choices[0]->message->content,"`"))->die();
+
         return $response['choices'][0]['text'];
     }
 
-    public function chat($className, $functionList)
+    public function chat($className, $functionList, $code = null)
     {
-        $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ";
+
+        $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}.";
+        echo $prompt;
+        $last_prompt = "\nThis is the complet code to test: {$code}";
+
         $response = $this->client->chat()->create([
             'model' => 'gpt-4',
             'messages' => [
-                ['role' => 'system', 'content' => $prompt],
+                ['role' => 'system', 'content' => $prompt.$last_prompt],
             ],
         ]);
-
-        $generatedCode = $this->removeUnnecesaryText($response->choices[0]->message->content, '`');
+        $raw_result = $response->choices[0]->message->content;
+        $generatedCode = $this->removeUnnecesaryText($raw_result, '`');
 
         return $generatedCode;
     }
 
     public function removeUnnecesaryText($input)
     {
-        $pattern = '/^.*?(```php)|(```).*$/';
-        $replacement = '';
-        $output = preg_replace($pattern, $replacement, $input);
+        $pattern = '/```php(.*?)```/s';
+        preg_match($pattern, $input, $matches);
+
+        $last_match_index = count($matches) - 1;
+
+        if (isset($matches[$last_match_index])) {
+            $output = trim($matches[$last_match_index]);
+        } else {
+            $output = 'No PHP code block found';
+        }
 
         return $output;
     }
 
+    private function getFileContents(string $filePath)
+    {
+        if (! file_exists($filePath)) {
+            throw new \Exception("File not found: {$filePath}");
+        }
+
+        $fileContents = file_get_contents($filePath);
+
+        if ($fileContents === false) {
+            throw new \Exception("Failed to read the file: {$filePath}");
+        }
+
+        return $fileContents;
+    }
+
     private function getPublicFunctions(string $filePath)
     {
-        $code = file_get_contents($filePath);
+        $code = $this->getFileContents($filePath);
         $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new NameResolver());

@@ -43,8 +43,6 @@ class LaravelTestsGenerator
 
         $generatedCode = $this->chat($className, $functionList, $code);
 
-        // ray($generatedCode);
-
         return $generatedCode;
     }
 
@@ -54,23 +52,22 @@ class LaravelTestsGenerator
             'model' => 'text-davinci-003',
             'prompt' => "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ",
         ]);
-        // ray(trim($response->choices[0]->message->content,"`"))->die();
+
         return $response['choices'][0]['text'];
     }
 
     public function chat($className, $functionList, $code = null)
     {
-        // ray('chat');
-        echo "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. ";
-        $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}. This is the complet code to test: {$code} ";
+        $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}.";
+        echo $prompt;
+        $last_prompt = "\nThis is the complet code to test: {$code}";
         $response = $this->client->chat()->create([
             'model' => 'gpt-4',
             'messages' => [
-                ['role' => 'system', 'content' => $prompt],
+                ['role' => 'system', 'content' => $prompt.$last_prompt],
             ],
         ]);
         $raw_result = $response->choices[0]->message->content;
-        // ray($raw_result)->die();
         $generatedCode = $this->removeUnnecesaryText($raw_result, '`');
 
         return $generatedCode;
@@ -78,7 +75,6 @@ class LaravelTestsGenerator
 
     public function removeUnnecesaryText($input)
     {
-        ray($input);
         $pattern = '/```php(.*?)```/s';
         preg_match($pattern, $input, $matches);
 
@@ -89,7 +85,6 @@ class LaravelTestsGenerator
         } else {
             $output = 'No PHP code block found';
         }
-        ray($output);
 
         return $output;
     }

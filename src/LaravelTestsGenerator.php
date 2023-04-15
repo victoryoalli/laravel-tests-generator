@@ -41,7 +41,9 @@ class LaravelTestsGenerator
         $publicFunctions = $this->getPublicFunctions($filePath);
         $functionList = implode(', ', array_keys($publicFunctions));
 
+
         $generatedCode = $this->chat($className, $functionList, $code);
+
 
         return $generatedCode;
     }
@@ -58,9 +60,11 @@ class LaravelTestsGenerator
 
     public function chat($className, $functionList, $code = null)
     {
+
         $prompt = "You are a Laravel Programmer. Create tests for the class '{$className}' which has the following methods: {$functionList}.";
         echo $prompt;
         $last_prompt = "\nThis is the complet code to test: {$code}";
+
         $response = $this->client->chat()->create([
             'model' => 'gpt-4',
             'messages' => [
@@ -69,6 +73,7 @@ class LaravelTestsGenerator
         ]);
         $raw_result = $response->choices[0]->message->content;
         $generatedCode = $this->removeUnnecesaryText($raw_result, '`');
+
 
         return $generatedCode;
     }

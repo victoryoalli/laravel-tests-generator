@@ -41,9 +41,7 @@ class LaravelTestsGenerator
         $publicFunctions = $this->getPublicFunctions($filePath);
         $functionList = implode(', ', array_keys($publicFunctions));
 
-
         $generatedCode = $this->chat($className, $functionList, $code);
-
 
         return $generatedCode;
     }
@@ -73,7 +71,6 @@ class LaravelTestsGenerator
         ]);
         $raw_result = $response->choices[0]->message->content;
         $generatedCode = $this->removeUnnecesaryText($raw_result, '`');
-
 
         return $generatedCode;
     }
